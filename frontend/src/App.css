@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #07080d;
+  --surface:  #0f1017;
+  --surface2: #181920;
+  --border:   #242430;
+  --accent:   #00f5a0;
+  --danger:   #ff3f5e;
+  --purple:   #8b6fff;
+  --text:     #dde0f0;
+  --muted:    #5a5c70;
+  --safe:     #00f5a0;
+  --risky:    #ff3f5e;
+  --font-h:   'Syne', sans-serif;
+  --font-m:   'DM Mono', monospace;
+  --radius:   10px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.4);
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-m);
+  font-size: 14px;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Layout ── */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.page-content { flex: 1; max-width: 1280px; width: 100%; margin: 0 auto; padding: 2.5rem 2rem; }
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+}
+
+/* ── Typography ── */
+.page-title {
+  font-family: var(--font-h);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.3rem;
+}
+.page-sub { color: var(--muted); font-size: 0.78rem; margin-bottom: 2rem; }
+.card-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+}
+
+/* ── Form ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.field input, .field select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-m);
+  font-size: 0.86rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field select option { background: var(--surface2); }
+
+/* ── Button ── */
+.btn-primary {
+  width: 100%; margin-top: 1.4rem;
+  background: var(--accent); color: #000;
+  font-family: var(--font-h); font-weight: 700;
+  font-size: 0.88rem; letter-spacing: 0.06em;
+  text-transform: uppercase; border: none;
+  padding: 0.85rem; border-radius: 8px;
+  cursor: pointer; transition: all 0.18s;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; filter: none; }
+
+/* ── Badge ── */
+.badge {
+  display: inline-block; padding: 0.18rem 0.55rem;
+  border-radius: 4px; font-size: 0.68rem;
+  font-weight: 500; letter-spacing: 0.07em;
+}
+.badge.safe  { background: rgba(0,245,160,0.12); color: var(--safe); }
+.badge.risky { background: rgba(255,63,94,0.12);  color: var(--risky); }
+
+/* ── Error ── */
+.error-box {
+  margin-top: 0.8rem; padding: 0.85rem 1rem;
+  border-radius: 8px; border: 1px solid var(--danger);
+  background: rgba(255,63,94,0.06); color: var(--danger); font-size: 0.8rem;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.3s ease forwards; }
+
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.35; transform:scale(0.75); }
+}
+
+/* ── Grids ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin-bottom: 1.5rem; }
+
+@media (max-width: 900px) {
+  .grid-2, .form-grid { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}

@@ -1,0 +1,9 @@
+.stat-card { padding: 1.3rem 1.5rem; }
+.stat-value {
+  font-family: var(--font-h);
+  font-size: 2rem; font-weight: 700;
+}
+.stat-value.safe   { color: var(--safe); }
+.stat-value.risky  { color: var(--risky); }
+.stat-value.purple { color: var(--purple); }
+.stat-value.muted  { color: var(--muted); }

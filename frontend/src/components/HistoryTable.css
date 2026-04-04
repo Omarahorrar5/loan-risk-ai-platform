@@ -1,0 +1,18 @@
+.table-wrap { overflow-x: auto; }
+.empty-table { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.82rem; }
+
+.h-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.h-table th {
+  text-align: left; font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted);
+  padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border);
+}
+.h-table td { padding: 0.65rem 0.8rem; border-bottom: 1px solid rgba(36,36,48,0.6); }
+.h-table tr:hover td { background: var(--surface2); }
+.muted { color: var(--muted); }
+
+.mini-bar-wrap { display: flex; align-items: center; gap: 0.5rem; }
+.mini-bar-track { width: 55px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 2px; }
+.mini-bar-fill.safe  { background: var(--safe); }
+.mini-bar-fill.risky { background: var(--risky); }
