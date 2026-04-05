@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./ml
+    ports:
+      - "8000:8000"
+    networks:
+      - app-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
