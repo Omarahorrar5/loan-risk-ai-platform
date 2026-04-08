@@ -18,7 +18,7 @@ export default function App() {
         <Header />
         <Routes>
           <Route path="/"          element={<Predict   onNewPrediction={addPrediction} />} />
-          <Route path="/dashboard" element={<Dashboard history={history} />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </div>
     </BrowserRouter>
