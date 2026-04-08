@@ -33,10 +33,15 @@ def get_db():
         db.close()
 
 #Create tables on startup
-@app.on_event("startup")
-def startup():
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app):
     init_db()
     logger.info("Database tables ready")
+    yield
+
+app = FastAPI(title="Loan Risk API", version="1.0", lifespan=lifespan)
 
 #Schemas
 class ApplicantIn(BaseModel):
