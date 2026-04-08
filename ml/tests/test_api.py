@@ -5,25 +5,28 @@ import sys, os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-#Mock everything before importing the app
+# ── Mock heavy dependencies before any import ─────────────────────────────────
+sys.modules['torch']                  = MagicMock()
+sys.modules['joblib']                 = MagicMock()
+sys.modules['sklearn']                = MagicMock()
+sys.modules['sklearn.preprocessing'] = MagicMock()
+
+import numpy as np
+
 mock_model    = MagicMock()
 mock_scaler   = MagicMock()
 mock_encoders = MagicMock()
 
-with patch.dict('sys.modules', {
-    'torch': MagicMock(),
-    'joblib': MagicMock(),
-    'numpy': MagicMock(),
-    'sklearn': MagicMock(),
-    'sklearn.preprocessing': MagicMock(),
-}):
-    with patch('api.model._model',    mock_model), \
-         patch('api.model.scaler',    mock_scaler), \
-         patch('api.model.encoders',  mock_encoders), \
-         patch('database.init_db',    return_value=None), \
-         patch('database.SessionLocal', MagicMock()):
+# ── Now import api.model so it exists before patching ────────────────────────
+import api.model as model_module
+model_module._model    = mock_model
+model_module.scaler    = mock_scaler
+model_module.encoders  = mock_encoders
 
-        from api.main import app
+# ── Patch DB and import app ───────────────────────────────────────────────────
+with patch('database.init_db',      return_value=None), \
+     patch('database.SessionLocal', MagicMock()):
+    from api.main import app
 
 client = TestClient(app)
 
@@ -41,7 +44,7 @@ VALID_PAYLOAD = {
     "cb_person_cred_hist_length":  4
 }
 
-#Tests
+# ── Tests ─────────────────────────────────────────────────────────────────────
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
@@ -49,18 +52,15 @@ def test_root():
 
 
 def test_health():
-    with patch('api.main._model',    mock_model), \
-         patch('api.main.scaler',    mock_scaler), \
-         patch('api.main.encoders',  mock_encoders):
-        response = client.get("/health")
-        assert response.status_code == 200
-        assert response.json()["status"] == "healthy"
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
 
 
 def test_predict_valid():
     mock_db = MagicMock()
     with patch('api.main.predict') as mock_predict, \
-         patch('api.main.get_db', return_value=iter([mock_db])):
+         patch('api.main.get_db',   return_value=iter([mock_db])):
         mock_predict.return_value = {
             "risk_probability": 0.43,
             "decision":         "RISKY",
@@ -81,8 +81,9 @@ def test_predict_invalid_missing_fields():
 
 
 def test_predict_invalid_grade():
+    mock_db = MagicMock()
     with patch('api.main.predict') as mock_predict, \
-         patch('api.main.get_db', return_value=iter([MagicMock()])):
+         patch('api.main.get_db',   return_value=iter([mock_db])):
         mock_predict.side_effect = ValueError("Unknown value 'Z' for 'loan_grade'")
         bad_payload = {**VALID_PAYLOAD, "loan_grade": "Z"}
         response = client.post("/predict", json=bad_payload)
@@ -106,7 +107,7 @@ def test_metrics_shape():
 def test_batch_predict():
     mock_db = MagicMock()
     with patch('api.main.predict') as mock_predict, \
-         patch('api.main.get_db', return_value=iter([mock_db])):
+         patch('api.main.get_db',   return_value=iter([mock_db])):
         mock_predict.return_value = {
             "risk_probability": 0.2,
             "decision":         "SAFE",
