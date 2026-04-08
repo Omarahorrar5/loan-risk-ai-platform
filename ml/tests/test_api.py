@@ -5,23 +5,26 @@ import sys, os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-# ── Mock heavy dependencies before any import ─────────────────────────────────
-sys.modules['torch']                  = MagicMock()
-sys.modules['joblib']                 = MagicMock()
-sys.modules['sklearn']                = MagicMock()
-sys.modules['sklearn.preprocessing'] = MagicMock()
-
-import numpy as np
+# ── Mock ALL torch submodules before anything imports torch ───────────────────
+torch_mock = MagicMock()
+sys.modules['torch']                = torch_mock
+sys.modules['torch.nn']             = MagicMock()
+sys.modules['torch.nn.functional']  = MagicMock()
+sys.modules['torch.utils']          = MagicMock()
+sys.modules['torch.utils.data']     = MagicMock()
+sys.modules['joblib']               = MagicMock()
+sys.modules['sklearn']              = MagicMock()
+sys.modules['sklearn.preprocessing']= MagicMock()
 
 mock_model    = MagicMock()
 mock_scaler   = MagicMock()
 mock_encoders = MagicMock()
 
-# ── Now import api.model so it exists before patching ────────────────────────
+# ── Now safe to import api.model ──────────────────────────────────────────────
 import api.model as model_module
-model_module._model    = mock_model
-model_module.scaler    = mock_scaler
-model_module.encoders  = mock_encoders
+model_module._model   = mock_model
+model_module.scaler   = mock_scaler
+model_module.encoders = mock_encoders
 
 # ── Patch DB and import app ───────────────────────────────────────────────────
 with patch('database.init_db',      return_value=None), \
@@ -113,7 +116,9 @@ def test_batch_predict():
             "decision":         "SAFE",
             "threshold":        0.4
         }
-        response = client.post("/predict/batch", json={"applicants": [VALID_PAYLOAD, VALID_PAYLOAD]})
+        response = client.post("/predict/batch", json={
+            "applicants": [VALID_PAYLOAD, VALID_PAYLOAD]
+        })
         assert response.status_code == 200
         data = response.json()
         assert data["count"] == 2
