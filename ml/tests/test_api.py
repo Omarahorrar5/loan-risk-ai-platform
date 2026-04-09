@@ -94,17 +94,25 @@ def test_predict_invalid_grade():
 
 
 def test_metrics_shape():
-    mock_db = MagicMock()
+    with patch('api.main.get_db') as mock_get_db:
+        mock_db = MagicMock()
 
-    mock_db.query.return_value.count.return_value = 10
+        total_q = MagicMock()
+        total_q.count.return_value = 10
 
-    risky_mock = MagicMock()
-    risky_mock.count.return_value = 3
-    safe_mock  = MagicMock()
-    safe_mock.count.return_value  = 7
-    mock_db.query.return_value.filter.side_effect = [risky_mock, safe_mock]
+        risky_q = MagicMock()
+        risky_q.count.return_value = 3
 
-    with patch('api.main.get_db', return_value=iter([mock_db])):
+        safe_q  = MagicMock()
+        safe_q.count.return_value  = 7
+
+        mock_db.query.return_value.count.return_value            = 10
+        mock_db.query.return_value.filter.return_value.count.return_value = 3
+
+        mock_db.query.side_effect = [total_q, risky_q, safe_q]
+
+        mock_get_db.return_value = iter([mock_db])
+
         response = client.get("/metrics")
         assert response.status_code == 200
         data = response.json()
