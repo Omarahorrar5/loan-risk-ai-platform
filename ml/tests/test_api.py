@@ -5,7 +5,7 @@ import sys, os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-# ── Mock ALL torch submodules before anything imports torch ───────────────────
+#Mock ALL torch submodules before anything imports torch
 torch_mock = MagicMock()
 sys.modules['torch']                = torch_mock
 sys.modules['torch.nn']             = MagicMock()
@@ -20,13 +20,13 @@ mock_model    = MagicMock()
 mock_scaler   = MagicMock()
 mock_encoders = MagicMock()
 
-# ── Now safe to import api.model ──────────────────────────────────────────────
+#Now safe to import api.model
 import api.model as model_module
 model_module._model   = mock_model
 model_module.scaler   = mock_scaler
 model_module.encoders = mock_encoders
 
-# ── Patch DB and import app ───────────────────────────────────────────────────
+#Patch DB and import app
 with patch('database.init_db',      return_value=None), \
      patch('database.SessionLocal', MagicMock()):
     from api.main import app
@@ -47,7 +47,7 @@ VALID_PAYLOAD = {
     "cb_person_cred_hist_length":  4
 }
 
-# ── Tests ─────────────────────────────────────────────────────────────────────
+#Tests
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
