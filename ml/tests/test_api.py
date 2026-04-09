@@ -1,36 +1,32 @@
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 import sys, os
+from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-#Mock ALL torch submodules before anything imports torch
-torch_mock = MagicMock()
-sys.modules['torch']                = torch_mock
-sys.modules['torch.nn']             = MagicMock()
-sys.modules['torch.nn.functional']  = MagicMock()
-sys.modules['torch.utils']          = MagicMock()
-sys.modules['torch.utils.data']     = MagicMock()
-sys.modules['joblib']               = MagicMock()
-sys.modules['sklearn']              = MagicMock()
-sys.modules['sklearn.preprocessing']= MagicMock()
+# ── Mock ALL torch submodules before anything imports torch ───────────────────
+sys.modules['torch']                 = MagicMock()
+sys.modules['torch.nn']              = MagicMock()
+sys.modules['torch.nn.functional']   = MagicMock()
+sys.modules['torch.utils']           = MagicMock()
+sys.modules['torch.utils.data']      = MagicMock()
+sys.modules['joblib']                = MagicMock()
+sys.modules['sklearn']               = MagicMock()
+sys.modules['sklearn.preprocessing'] = MagicMock()
 
 mock_model    = MagicMock()
 mock_scaler   = MagicMock()
 mock_encoders = MagicMock()
 
-#Now safe to import api.model
 import api.model as model_module
 model_module._model   = mock_model
 model_module.scaler   = mock_scaler
 model_module.encoders = mock_encoders
 
-#Patch DB and import app
 with patch('database.init_db',      return_value=None), \
      patch('database.SessionLocal', MagicMock()):
     from api.main import app
 
+from fastapi.testclient import TestClient
 client = TestClient(app)
 
 VALID_PAYLOAD = {
@@ -47,7 +43,7 @@ VALID_PAYLOAD = {
     "cb_person_cred_hist_length":  4
 }
 
-#Tests
+# ── Tests ─────────────────────────────────────────────────────────────────────
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
@@ -63,7 +59,7 @@ def test_health():
 def test_predict_valid():
     mock_db = MagicMock()
     with patch('api.main.predict') as mock_predict, \
-         patch('api.main.get_db',   return_value=iter([mock_db])):
+         patch('api.main.get_db', return_value=iter([mock_db])):
         mock_predict.return_value = {
             "risk_probability": 0.43,
             "decision":         "RISKY",
@@ -86,22 +82,17 @@ def test_predict_invalid_missing_fields():
 def test_predict_invalid_grade():
     mock_db = MagicMock()
     with patch('api.main.predict') as mock_predict, \
-         patch('api.main.get_db',   return_value=iter([mock_db])):
+         patch('api.main.get_db', return_value=iter([mock_db])):
         mock_predict.side_effect = ValueError("Unknown value 'Z' for 'loan_grade'")
-        bad_payload = {**VALID_PAYLOAD, "loan_grade": "Z"}
-        response = client.post("/predict", json=bad_payload)
+        response = client.post("/predict", json={**VALID_PAYLOAD, "loan_grade": "Z"})
         assert response.status_code == 422
 
 
 def test_metrics_shape():
-    with patch('api.main.metrics') as mock_metrics:
-        mock_metrics.return_value = {
-            "total_predictions": 10,
-            "risky":             3,
-            "safe":              7,
-            "errors":            0,
-            "risky_rate":        "30.0%"
-        }
+    mock_db = MagicMock()
+    mock_db.query.return_value.count.return_value                        = 10
+    mock_db.query.return_value.filter.return_value.count.return_value   = 3
+    with patch('api.main.get_db', return_value=iter([mock_db])):
         response = client.get("/metrics")
         assert response.status_code == 200
         data = response.json()
@@ -114,7 +105,7 @@ def test_metrics_shape():
 def test_batch_predict():
     mock_db = MagicMock()
     with patch('api.main.predict') as mock_predict, \
-         patch('api.main.get_db',   return_value=iter([mock_db])):
+         patch('api.main.get_db', return_value=iter([mock_db])):
         mock_predict.return_value = {
             "risk_probability": 0.2,
             "decision":         "SAFE",

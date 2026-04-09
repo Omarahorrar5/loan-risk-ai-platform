@@ -93,9 +93,9 @@ def health():
 
 @app.get("/metrics")
 def metrics(db: Session = Depends(get_db)):
-    total = db.query(Prediction).count()
-    risky = db.query(Prediction).filter(Prediction.decision == "RISKY").count()
-    safe  = db.query(Prediction).filter(Prediction.decision == "SAFE").count()
+    total = int(db.query(Prediction).count())
+    risky = int(db.query(Prediction).filter(Prediction.decision == "RISKY").count())
+    safe  = int(db.query(Prediction).filter(Prediction.decision == "SAFE").count())
     return {
         "total_predictions": total,
         "risky":             risky,
@@ -103,7 +103,6 @@ def metrics(db: Session = Depends(get_db)):
         "errors":            0,
         "risky_rate":        f"{round(risky / total * 100, 1)}%" if total > 0 else "N/A",
     }
-
 
 @app.get("/history")
 def history(limit: int = 50, db: Session = Depends(get_db)):
