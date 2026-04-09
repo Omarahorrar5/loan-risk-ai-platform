@@ -18,7 +18,8 @@ services:
       retries: 5
 
   backend:
-    build: ./ml
+    image: omarahorrar/loan-risk-backend:latest
+    pull_policy: always
     ports:
       - "8000:8000"
     environment:
@@ -30,7 +31,8 @@ services:
       - app-net
 
   frontend:
-    build: ./frontend
+    image: omarahorrar/loan-risk-frontend:latest
+    pull_policy: always
     ports:
       - "80:80"
     depends_on:

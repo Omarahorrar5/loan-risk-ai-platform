@@ -43,7 +43,7 @@ VALID_PAYLOAD = {
     "cb_person_cred_hist_length":  4
 }
 
-# ── Tests ─────────────────────────────────────────────────────────────────────
+#Tests
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
