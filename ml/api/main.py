@@ -1,10 +1,11 @@
 import logging
 import time
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from api.model import predict, _model, scaler, encoders
 from database import SessionLocal, Prediction, init_db
 
@@ -15,16 +16,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Loan Risk API", version="1.0")
+@asynccontextmanager
+async def lifespan(app):
+    init_db()
+    logger.info("Database tables ready")
+    yield
+
+# ── Single app definition ─────────────────────────────────────────────────────
+app = FastAPI(title="Loan Risk API", version="1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
-#DB session dependency
+# ── DB session ────────────────────────────────────────────────────────────────
 def get_db():
     db = SessionLocal()
     try:
@@ -32,18 +42,7 @@ def get_db():
     finally:
         db.close()
 
-#Create tables on startup
-from contextlib import asynccontextmanager
-
-@asynccontextmanager
-async def lifespan(app):
-    init_db()
-    logger.info("Database tables ready")
-    yield
-
-app = FastAPI(title="Loan Risk API", version="1.0", lifespan=lifespan)
-
-#Schemas
+# ── Schemas ───────────────────────────────────────────────────────────────────
 class ApplicantIn(BaseModel):
     person_age:                  int
     person_income:               int
@@ -65,7 +64,7 @@ class PredictionOut(BaseModel):
 class BatchIn(BaseModel):
     applicants: list[ApplicantIn]
 
-#Middleware
+# ── Middleware ────────────────────────────────────────────────────────────────
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start    = time.time()
@@ -74,7 +73,24 @@ async def log_requests(request: Request, call_next):
     logger.info(f"{request.method} {request.url.path} → {response.status_code} ({duration}ms)")
     return response
 
-#Routes
+# ── CORS preflight handlers ───────────────────────────────────────────────────
+@app.options("/predict")
+async def options_predict():
+    return JSONResponse(content={}, headers={
+        "Access-Control-Allow-Origin":  "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
+
+@app.options("/predict/batch")
+async def options_predict_batch():
+    return JSONResponse(content={}, headers={
+        "Access-Control-Allow-Origin":  "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
+
+# ── Routes ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def root():
     return {"status": "ok", "message": "Loan Risk API is running"}
@@ -103,6 +119,7 @@ def metrics(db: Session = Depends(get_db)):
         "errors":            0,
         "risky_rate":        f"{round(risky / total * 100, 1)}%" if total > 0 else "N/A",
     }
+
 
 @app.get("/history")
 def history(limit: int = 50, db: Session = Depends(get_db)):
@@ -135,13 +152,13 @@ def history(limit: int = 50, db: Session = Depends(get_db)):
 def predict_risk(applicant: ApplicantIn, db: Session = Depends(get_db)):
     try:
         result = predict(applicant.model_dump())
-
-        row = Prediction(**applicant.model_dump(),
-                         risk_probability=result["risk_probability"],
-                         decision=result["decision"])
+        row = Prediction(
+            **applicant.model_dump(),
+            risk_probability=result["risk_probability"],
+            decision=result["decision"]
+        )
         db.add(row)
         db.commit()
-
         logger.info(f"Prediction → {result['decision']} (prob={result['risk_probability']})")
         return result
     except ValueError as e:
@@ -158,9 +175,11 @@ def predict_batch(batch: BatchIn, db: Session = Depends(get_db)):
     for i, applicant in enumerate(batch.applicants):
         try:
             result = predict(applicant.model_dump())
-            row    = Prediction(**applicant.model_dump(),
-                                risk_probability=result["risk_probability"],
-                                decision=result["decision"])
+            row = Prediction(
+                **applicant.model_dump(),
+                risk_probability=result["risk_probability"],
+                decision=result["decision"]
+            )
             db.add(row)
             results.append({"index": i, "status": "ok", **result})
         except Exception as e:
