@@ -20,7 +20,7 @@ provider "aws" {
   shared_credentials_files = ["~/.aws/credentials"]
 }
 
-data "aws_ami" {
+data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]
 

@@ -1,10 +1,10 @@
 resource "aws_key_pair" "main" {
-    key_name = "${var.project_name}-key"
-    public_key = file(var.ssh_public_key_path)
+  key_name   = "${var.project_name}-key"
+  public_key = file(var.ssh_public_key_path)
 
-    tags = {
-        Project = var.project_name
-    }
+  tags = {
+    Project = var.project_name
+  }
 }
 
 resource "aws_instance" "main" {
