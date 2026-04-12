@@ -1,0 +1,7 @@
+aws_region          = "us-east-1"
+project_name        = "loan-risk"
+instance_type       = "t3.small"
+ssh_public_key_path = "~/.ssh/loan-risk-key.pub"
+allowed_ssh_cidr    = "0.0.0.0/0"
+dockerhub_username  = "omarahorrar"
+db_password         = "loanpass"
