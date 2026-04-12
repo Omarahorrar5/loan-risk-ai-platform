@@ -19,7 +19,6 @@ services:
 
   backend:
     image: omarahorrar/loan-risk-backend:latest
-    pull_policy: always
     ports:
       - "8000:8000"
     environment:
@@ -32,7 +31,6 @@ services:
 
   frontend:
     image: omarahorrar/loan-risk-frontend:latest
-    pull_policy: always
     ports:
       - "80:80"
     depends_on:
