@@ -5,20 +5,6 @@ End-to-end MLOps platform that predicts credit loan risk using a neural network,
 
 ---
 
-## Architecture
-
-Developer → git push → GitHub Actions → Docker Hub → AWS EC2
-                           │
-                    pytest → build → push
-                                         │
-                                    EC2 (Terraform)
-                                    ├── nginx + React  :80
-                                    ├── FastAPI + MLP  :8000
-                                    └── PostgreSQL     :5432
-```
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
