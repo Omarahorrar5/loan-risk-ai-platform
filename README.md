@@ -1,4 +1,3 @@
-```markdown
 # Loan Risk AI Platform
 
 End-to-end MLOps platform that predicts credit loan risk using a neural network, served via a REST API, containerized with Docker, deployed on AWS EC2, and delivered through a full CI/CD pipeline — built as a portfolio project to demonstrate DevOps and MLOps practices.
