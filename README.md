@@ -1,20 +1,12 @@
 ```markdown
 # Loan Risk AI Platform
 
-![CI/CD](https://github.com/omarahorrar/loan-risk-ai-platform/actions/workflows/ci-cd.yml/badge.svg)
-![Docker](https://img.shields.io/badge/docker-hub-blue?logo=docker)
-![AWS](https://img.shields.io/badge/deployed-AWS%20EC2-orange?logo=amazonaws)
-![Terraform](https://img.shields.io/badge/infra-terraform-purple?logo=terraform)
-![Python](https://img.shields.io/badge/python-3.12-blue?logo=python)
-![PyTorch](https://img.shields.io/badge/model-pytorch-red?logo=pytorch)
-
 End-to-end MLOps platform that predicts credit loan risk using a neural network, served via a REST API, containerized with Docker, deployed on AWS EC2, and delivered through a full CI/CD pipeline — built as a portfolio project to demonstrate DevOps and MLOps practices.
 
 ---
 
 ## Architecture
 
-```
 Developer → git push → GitHub Actions → Docker Hub → AWS EC2
                            │
                     pytest → build → push
