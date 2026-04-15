@@ -38,8 +38,31 @@ services:
     networks:
       - app-net
 
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlflow_server
+    ports:
+      - "5000:5000"
+    environment:
+      - BACKEND_STORE_URI=postgresql://loanuser:loanpass@db:5432/loandb
+      - ARTIFACT_ROOT=/app/artifacts
+    volumes:
+      - mlflow_artifacts:/app/artifacts
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-net
+    command: >
+      mlflow server 
+      --backend-store-uri postgresql://loanuser:loanpass@db:5432/loandb
+      --default-artifact-root /app/artifacts
+      --host 0.0.0.0
+      --port 5000
+
 volumes:
   pgdata:
+  mlflow_artifacts:
 
 networks:
   app-net:
