@@ -10,8 +10,10 @@ import mlflow.pytorch
 #MLFLOW SETUP
 # Use http://localhost:5000 if running the script on your VM 
 # Use http://mlflow:5000 if this were running inside a docker container
-mlflow.set_tracking_uri("http://mlflow:5000")
+mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("Loan-Risk-Analysis")
+
+os.environ["MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT"] = "120"
 
 # Enables automatic logging of weights, gradients, and optimizer params
 mlflow.pytorch.autolog()
@@ -139,7 +141,11 @@ with mlflow.start_run(run_name="MLP_Training_Run"):
 
     # Save model locally and to MLflow
     torch.save(model.state_dict(), os.path.join(SAVE_DIR, "mlp_model.pth"))
-    mlflow.pytorch.log_model(model, "model")
+    mlflow.pytorch.log_model(
+        model, 
+        artifact_path="model",
+        serialization_format="pt2"
+    )
     
     print(f"\nModel saved locally and to MLflow registry.")
     print(f"Check the dashboard at http://localhost:5000")

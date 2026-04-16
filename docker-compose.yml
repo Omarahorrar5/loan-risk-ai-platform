@@ -43,9 +43,6 @@ services:
     container_name: mlflow_server
     ports:
       - "5000:5000"
-    environment:
-      - BACKEND_STORE_URI=postgresql://loanuser:loanpass@db:5432/loandb
-      - ARTIFACT_ROOT=/app/artifacts
     volumes:
       - mlflow_artifacts:/app/artifacts
     depends_on:
@@ -56,7 +53,8 @@ services:
     command: >
       mlflow server 
       --backend-store-uri postgresql://loanuser:loanpass@db:5432/loandb
-      --default-artifact-root /app/artifacts
+      --artifacts-destination /app/artifacts
+      --serve-artifacts
       --host 0.0.0.0
       --port 5000
 
